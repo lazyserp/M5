@@ -1,3 +1,12 @@
-# Write your LocalEmbedder class here!
-# Goal: Create a class that loads "all-MiniLM-L6-v2" locally
-# and generates list of floats (embeddings) for text strings.
+from sentence_transformers import SentenceTransformer
+from typing import List
+
+class LocalEmbedder:
+    def __init__(self,model_name:str = "all-MiniLM-L6-v2"):
+        self.model = SentenceTransformer(model_name)
+
+    def get_embeddings(self,texts: List[str]) -> List[List[float]]:
+        embeddings = self.model.encode(texts,convert_to_numpy=True)
+        return embeddings.tolist()
+
+        
