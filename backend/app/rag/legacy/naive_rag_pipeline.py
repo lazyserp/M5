@@ -1,14 +1,15 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+# Append parent directory tree so Python can resolve 'app'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from app.core.llm_client import LocalLLMClient
-from app.rag.simple_splitter import chunk_file
-from app.rag.embedder import LocalEmbedder
-from app.rag.memory_search import MemoryVectorStore
+from app.rag.legacy.simple_splitter import chunk_file
+from app.rag.legacy.memory_search import MemoryVectorStore
+from app.rag.indexing.embedder import LocalEmbedder
 
-def run_rag(file_path : str , query : str):
+def run_rag(file_path: str, query: str):
     client = LocalLLMClient()
     embedder = LocalEmbedder()
     store = MemoryVectorStore()
@@ -18,15 +19,14 @@ def run_rag(file_path : str , query : str):
 
     texts = [c["text"] for c in chunks]
 
-
     print("[+] Generating Embeddings ---")
     embeddings = embedder.get_embeddings(texts)
 
-    store.add_chunks(chunks,embeddings)
+    store.add_chunks(chunks, embeddings)
 
     print("[+] Querying vector store... ---")
     query_vec = embedder.get_embeddings([query])[0]
-    search_results = store.search(query_vec,top_k=2)    
+    search_results = store.search(query_vec, top_k=2)    
 
     context = "\n---\n".join([r["chunk"]["text"] for r in search_results])
 
@@ -36,18 +36,12 @@ def run_rag(file_path : str , query : str):
         f"CONTEXT:\n{context}"
     )
 
-
     print("[+] Sending payload to local LLM...")
     answer = client.chat(system_prompt, query)
     print(f"\n[ANSWER]:\n{answer}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python rag_pipeline.py <file_path> <query>")
+        print("Usage: python naive_rag_pipeline.py <file_path> <query>")
     else:
-        # Run the pipeline with the arguments passed in the terminal
         run_rag(sys.argv[1], sys.argv[2])
-
-
-
-

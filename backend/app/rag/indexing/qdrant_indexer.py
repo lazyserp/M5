@@ -1,14 +1,17 @@
-from typing import List, Dict , Any
+import uuid
+from typing import List, Dict, Any
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance ,VectorParams,PointStruct
-
+from qdrant_client.models import Distance, VectorParams, PointStruct
 
 class QdrantStore:
-    def __init__(self,host: str = "localhost", port:int = 6333):
-        self.client = QdrantClient(host=host,port=port)
+    """
+    Qdrant HNSW vector database storage and query manager.
+    """
+    def __init__(self, host: str = "localhost", port: int = 6333):
+        self.client = QdrantClient(host=host, port=port)
         self.collection_name = "codebase_vectors"
 
-    def init_collection(self,vector_size: int = 384):
+    def init_collection(self, vector_size: int = 384):
         if not self.client.collection_exists(self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
@@ -17,11 +20,10 @@ class QdrantStore:
                     distance=Distance.COSINE
                 )
             )
+
     def upload_chunks(self, chunks: List[Dict[str, Any]], embeddings: List[List[float]]):
-        import uuid
         points = []
         for chunk, vector in zip(chunks, embeddings):
-            # Generate a stable UUID based on chunk content and file path
             point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, chunk["content"] + chunk.get("file", "")))
             point = PointStruct(
                 id=point_id,
@@ -48,11 +50,8 @@ class QdrantStore:
 
         results = []
         for hit in search_result.points:
-            results.append(
-                {
-                    "score": hit.score,
-                    "chunk": hit.payload
-                }
-            )
+            results.append({
+                "score": hit.score,
+                "chunk": hit.payload
+            })
         return results
-

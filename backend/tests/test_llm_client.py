@@ -6,6 +6,7 @@ import os
 # otherwise Python would throw a ModuleNotFoundError.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# pyrefly: ignore [missing-import]
 from app.core.llm_client import LocalLLMClient
 
 def test_client():

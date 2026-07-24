@@ -29,7 +29,6 @@ class ASTParser:
         Dynamically imports the matching tree-sitter-<language> library at runtime.
         E.g. if lang_name is 'python', it dynamically imports 'tree_sitter_python'.
         """
-        # Map abbreviations to official tree-sitter module endings
         name_map = {
             "py": "python",
             "js": "javascript",
@@ -40,9 +39,7 @@ class ASTParser:
         module_name = f"tree_sitter_{clean_name}"
 
         try:
-            # importlib.import_module does the equivalent of 'import tree_sitter_python' at runtime
             lang_module = importlib.import_module(module_name)
-            # Instantiate the tree-sitter Language object using the module's language() compiler hook
             return Language(lang_module.language())
         except ImportError:
             raise ImportError(
@@ -55,31 +52,22 @@ class ASTParser:
         Parses source code text and returns structural code blocks (functions, classes, etc.)
         along with their metadata and contents.
         """
-        # Tree-sitter works with raw bytes. We encode our Python string to UTF-8 bytes.
         tree = self.parser.parse(bytes(code, "utf8"))
         root_node = tree.root_node
         blocks = []
 
-        # Retrieve the relevant block node types for our active language
-        # Default to standard python types if the language isn't explicitly configured in our map
         target_types = LANGUAGE_BLOCK_TYPES.get(self.language_name, ["function_definition", "class_definition"])
 
         def traverse(node):
-            # Check if this node type represents a class or function structure
             if node.type in target_types:
-                # Find the node's name child (e.g. the function name identifier)
                 name_node = node.child_by_field_name("name")
                 if name_node:
-                    # Slice the name from the byte array and decode back to string
                     name = bytes(code, "utf8")[name_node.start_byte : name_node.end_byte].decode("utf8")
                 else:
                     name = "unknown"
 
-                # Extract start and end lines (adding 1 because tree-sitter line coordinates are 0-indexed)
                 start_line = node.start_point[0] + 1
                 end_line = node.end_point[0] + 1
-
-                # Extract raw code contents of this block
                 content = bytes(code, "utf8")[node.start_byte : node.end_byte].decode("utf8")
 
                 blocks.append({
@@ -90,7 +78,6 @@ class ASTParser:
                     "content": content
                 })
 
-            # Recursively walk through child nodes
             for child in node.children:
                 traverse(child)
 
