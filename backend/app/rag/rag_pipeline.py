@@ -13,18 +13,18 @@ def run_rag(file_path : str , query : str):
     embedder = LocalEmbedder()
     store = MemoryVectorStore()
 
-    print("--- Chunking File ---")
+    print("[+] Chunking File ---")
     chunks = chunk_file(file_path)
 
     texts = [c["text"] for c in chunks]
 
 
-    print("--- Generating Embeddings ---")
+    print("[+] Generating Embeddings ---")
     embeddings = embedder.get_embeddings(texts)
 
     store.add_chunks(chunks,embeddings)
 
-    print(" --- Querying vector store... ---")
+    print("[+] Querying vector store... ---")
     query_vec = embedder.get_embeddings([query])[0]
     search_results = store.search(query_vec,top_k=2)    
 
