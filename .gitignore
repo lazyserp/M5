@@ -1,4 +1,86 @@
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+.pytest_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+venv/
+.venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+node_modules/
+
+# Compiled extension build outputs (compiled from src/ to JS)
+/extension/out/
+/extension/dist/
+
+# VS Code extension packages (.vsix package output)
+*.vsix
+.vscode-test/
+
+# ------------------------------------------------------------------------------
+# 4. Local Database & Vector Store Data
+# ------------------------------------------------------------------------------
+# Storage data for local Qdrant container
+qdrant_storage/
+
+# Storage data for local PostgreSQL container
+postgres_data/
+
+# Local SQLite databases (sometimes used for light caching/PoCs)
+*.db
+*.sqlite
+
+# ------------------------------------------------------------------------------
+# 5. Sensitive Configuration / Secrets (Local Environments)
+# ------------------------------------------------------------------------------
+# Environment files containing local DB passwords, API keys, or configurations
+.env
+.env.local
+.env.*.local
+*.env
+secrets.json
+
+# ------------------------------------------------------------------------------
+# 6. IDE / Editor Settings
+# ------------------------------------------------------------------------------
+# User-specific VS Code folder settings (excluding standard config templates if needed)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDE settings (e.g. PyCharm, IntelliJ)
+.idea/
+
+# Developer temporary swap files
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ------------------------------------------------------------------------------
+# 7. OS Temporary Files
+# ------------------------------------------------------------------------------
+# macOS metadata directory files
+.DS_Store
+# Windows thumbnail cache files
+Thumbs.db
+
+# ------------------------------------------------------------------------------
+# 8. User-Specific Personal Files
+# ------------------------------------------------------------------------------
+Design Docs/
 features
 AGENTS.md
-*/Design Docs
-topics
