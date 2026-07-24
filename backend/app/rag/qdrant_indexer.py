@@ -1,6 +1,3 @@
-from sympy import limit
-from aiohttp import payload
-from numpy import dsplit
 from typing import List, Dict , Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance ,VectorParams,PointStruct
@@ -20,35 +17,37 @@ class QdrantStore:
                     distance=Distance.COSINE
                 )
             )
-
-    def upload_chunks(self, chunks:List[Dict[str,Any]],  embeddings: List[List[float]]):
+    def upload_chunks(self, chunks: List[Dict[str, Any]], embeddings: List[List[float]]):
+        import uuid
         points = []
-        for idx, (chunk,vector) in enumerate(zip(chunks,embeddings)):
+        for chunk, vector in zip(chunks, embeddings):
+            # Generate a stable UUID based on chunk content and file path
+            point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, chunk["content"] + chunk.get("file", "")))
             point = PointStruct(
-                id= idx, #unique identifier ID
-                vector=vector, #the 384 corrdinates list
+                id=point_id,
+                vector=vector,
                 payload={
                     "content": chunk["content"],
-                    "type" : chunk["type"],
-                    "name" : chunk["name"],
-                    "start_line" : chunk["start_line"],
-                    "end_lone": chunk["end_line"],
-                    "file" : chunk.get("file", "")
+                    "type": chunk["type"],
+                    "name": chunk["name"],
+                    "start_line": chunk["start_line"],
+                    "end_line": chunk["end_line"],
+                    "file": chunk.get("file", "")
                 }
             )
             points.append(point)
 
-        self.client.upsert(collection_name=self.collection_name,points=points)
-
-    def search(self,query_vector: List[float] , top_k:int = 2) -> List[Dict[str,Any]]:
-        search_result = self.client.search(
-            collection_name = self.collection_name,
-            query_vector = query_vector,
+        self.client.upsert(collection_name=self.collection_name, points=points)
+        
+    def search(self, query_vector: List[float], top_k: int = 2) -> List[Dict[str, Any]]:
+        search_result = self.client.query_points(
+            collection_name=self.collection_name,
+            query=query_vector,
             limit=top_k
         )
 
         results = []
-        for hit in search_result:
+        for hit in search_result.points:
             results.append(
                 {
                     "score": hit.score,
@@ -56,3 +55,4 @@ class QdrantStore:
                 }
             )
         return results
+
