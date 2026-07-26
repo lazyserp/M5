@@ -1,0 +1,12 @@
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0
+requests>=2.31.0
+sentence-transformers>=2.2.2
+torch>=2.0.0
+tree-sitter>=0.22.0
+tree-sitter-python>=0.22.0
+qdrant-client>=1.9.0
+networkx>=3.1
+psycopg2-binary>=2.9.6
+python-multipart>=0.0.6
