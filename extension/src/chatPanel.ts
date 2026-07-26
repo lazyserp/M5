@@ -38,18 +38,32 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
     private async _handleQuery(query: string, filePath: string) {
         try {
-            const response = await fetch('http://localhost:18000/api/v1/chat', {
+            const config = vscode.workspace.getConfiguration('m5');
+            const serverUrl = config.get<string>('serverUrl') || 'http://localhost:18000';
+
+            const response = await fetch(`${serverUrl}/api/v1/chat/stream`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: query, file_path: filePath })
             });
 
-            if (!response.ok) {
+            if (!response.ok || !response.body) {
                 throw new Error(`Server returned status: ${response.status}`);
             }
 
-            const data = await response.json() as { answer: string; target_file: string };
-            this._view?.webview.postMessage({ type: 'addAnswer', value: data.answer });
+            this._view?.webview.postMessage({ type: 'startStream' });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value, { stream: true });
+                if (chunk) {
+                    this._view?.webview.postMessage({ type: 'appendToken', value: chunk });
+                }
+            }
         } catch (err: any) {
             this._view?.webview.postMessage({ type: 'addError', value: `Error connecting to backend: ${err.message}` });
         }
@@ -76,7 +90,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
     </style>
 </head>
 <body>
-    <h3>⚡ Project M5 AI</h3>
+    <h3>M   5 </h3>
     <div id="chat-container"></div>
     <div id="input-area">
         <input type="text" id="query-input" placeholder="Ask about open codebase..." />
@@ -88,6 +102,7 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         const chatContainer = document.getElementById('chat-container');
         const queryInput = document.getElementById('query-input');
         const sendBtn = document.getElementById('send-btn');
+        let activeStreamElement = null;
 
         function sendQuery() {
             const text = queryInput.value.trim();
@@ -113,7 +128,16 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
 
         window.addEventListener('message', event => {
             const message = event.data;
-            if (message.type === 'addAnswer') {
+            if (message.type === 'startStream') {
+                activeStreamElement = document.createElement('div');
+                activeStreamElement.className = 'message assistant';
+                chatContainer.appendChild(activeStreamElement);
+            } else if (message.type === 'appendToken') {
+                if (activeStreamElement) {
+                    activeStreamElement.innerText += message.value;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            } else if (message.type === 'addAnswer') {
                 appendMessage(message.value, 'assistant');
             } else if (message.type === 'addError') {
                 appendMessage(message.value, 'error');

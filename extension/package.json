@@ -1,12 +1,12 @@
 {
-  "name": "m5-ai-assistant",
-  "displayName": "Project M5 - Air-Gapped AI Code Assistant",
+  "name": "M5",
+  "displayName": "Project M5 ",
   "description": "On-premise enterprise AI code assistant with AST Graph-RAG context",
   "version": "0.0.1",
-  "publisher": "m5-enterprise",
+  "publisher": "Aman",
   "repository": {
     "type": "git",
-    "url": "https://github.com/m5-ai/m5-assistant"
+    "url": "https://github.com/lazyserp/M5"
   },
   "engines": {
     "vscode": "^1.80.0"
@@ -24,8 +24,8 @@
       "activitybar": [
         {
           "id": "m5-ai-sidebar",
-          "title": "Project M5 AI",
-          "name": "Project M5 AI",
+          "title": "M5 ",
+          "name": "M5 ",
           "icon": "$(sparkle)"
         }
       ]
@@ -40,6 +40,16 @@
           "icon": "$(sparkle)"
         }
       ]
+    },
+    "configuration": {
+      "title": "M5 ",
+      "properties": {
+        "m5.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:18000",
+          "description": "URL of the central Project M5 backend server / K8s cluster (e.g. https://m5-ai.internal.bank.com)"
+        }
+      }
     }
   },
   "scripts": {

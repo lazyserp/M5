@@ -1,1 +1,11 @@
-FASTApi server : uvicorn backend.app.main:app --reload --port 8000
+onboard any codebase:
+python "d:\Wissen Practice\M5\backend\app\rag\indexing\workspace_indexer.py" "." --reset
+
+1. Deliver Package	Hand client docker-compose.m5.yml + M5-0.0.1.vsix.	✅ Ready
+2. Client Server Launch	Client runs docker compose -f docker-compose.m5.yml up -d.	✅ Ready
+3. IDE Installation	Developers install M5-0.0.1.vsix in 2 clicks.	✅ Ready
+4. Live Streaming Chat	Developers query their codebase with live real-time token streaming.	✅ Verified
+
+
+to reset to a new codease:
+docker exec M5-backend python -m app.rag.indexing.workspace_indexer /app/workspace --reset

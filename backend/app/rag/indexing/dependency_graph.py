@@ -13,6 +13,23 @@ class CodeDependencyGraph:
             "py": [
                 re.compile(r"^\s*import\s+([a-zA-Z0-9_\.]+)"),
                 re.compile(r"^\s*from\s+([a-zA-Z0-9_\.]+)\s+import")
+            ],
+            "java": [
+                re.compile(r"^\s*import\s+([a-zA-Z0-9_\.]+);")
+            ],
+            "js": [
+                re.compile(r"^\s*import\s+.*?\s+from\s+['\"](.*?)['\"]"),
+                re.compile(r"^\s*const\s+.*?\s*=\s*require\(['\"](.*?)['\"]\)")
+            ],
+            "ts": [
+                re.compile(r"^\s*import\s+.*?\s+from\s+['\"](.*?)['\"]"),
+                re.compile(r"^\s*const\s+.*?\s*=\s*require\(['\"](.*?)['\"]\)")
+            ],
+            "cpp": [
+                re.compile(r'^\s*#include\s+["<]([a-zA-Z0-9_\.\/\\]+)[">]')
+            ],
+            "h": [
+                re.compile(r'^\s*#include\s+["<]([a-zA-Z0-9_\.\/\\]+)[">]')
             ]
         }
 

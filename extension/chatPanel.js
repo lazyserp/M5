@@ -101,7 +101,7 @@ class ChatViewProvider {
     </style>
 </head>
 <body>
-    <h3>⚡ Project M5 AI</h3>
+    <h3> M5 </h3>
     <div id="chat-container"></div>
     <div id="input-area">
         <input type="text" id="query-input" placeholder="Ask about open codebase..." />
