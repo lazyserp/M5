@@ -1,0 +1,55 @@
+{
+  "name": "m5-ai-assistant",
+  "displayName": "Project M5 - Air-Gapped AI Code Assistant",
+  "description": "On-premise enterprise AI code assistant with AST Graph-RAG context",
+  "version": "0.0.1",
+  "publisher": "m5-enterprise",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m5-ai/m5-assistant"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onView:m5-ai-chat-view"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "m5-ai-sidebar",
+          "title": "Project M5 AI",
+          "name": "Project M5 AI",
+          "icon": "$(sparkle)"
+        }
+      ]
+    },
+    "views": {
+      "m5-ai-sidebar": [
+        {
+          "type": "webview",
+          "id": "m5-ai-chat-view",
+          "name": "Graph-RAG Chat",
+          "title": "Graph-RAG Chat",
+          "icon": "$(sparkle)"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "18.x",
+    "typescript": "^5.1.6"
+  }
+}
