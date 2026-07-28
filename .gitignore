@@ -84,3 +84,5 @@ Thumbs.db
 Design Docs/
 features
 AGENTS.md
+# Local M5 developer authentication and audit database
+m5.db

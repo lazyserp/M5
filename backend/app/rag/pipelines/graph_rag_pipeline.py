@@ -7,6 +7,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from app.core.llm_client import LocalLLMClient
+from app.core.config import Settings
 from app.rag.parsers.ast_parser import ASTParser
 from app.rag.parsers.ast_chunker import ASTChunker
 from app.rag.indexing.embedder import LocalEmbedder
@@ -16,10 +17,15 @@ from app.rag.indexing.dependency_graph import CodeDependencyGraph
 
 def run_graph_rag(target_file: str, query: str):
     target_file = os.path.abspath(target_file)
+    settings = Settings.from_environment()
 
-    client = LocalLLMClient()
+    client = LocalLLMClient(
+        settings.ollama_base_url,
+        settings.ollama_model,
+        settings.request_timeout_seconds,
+    )
     embedder = LocalEmbedder()
-    store = QdrantStore()
+    store = QdrantStore(settings.qdrant_host, settings.qdrant_port)
     parser = ASTParser()
     chunker = ASTChunker()
     graph = CodeDependencyGraph()

@@ -1,6 +1,7 @@
 import os
 import sys
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import Any, Dict, Iterable, List
 
 # Ensure backend root is on sys.path
 backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
@@ -32,13 +33,12 @@ class WorkspaceIndexer:
     """
     Day 0 Enterprise Repository Batch Ingestion & Vector Indexing Engine.
     """
-    def __init__(self, workspace_root: str):
-        if "QDRANT_PORT" not in os.environ:
-            os.environ["QDRANT_PORT"] = "16333"
-
+    def __init__(
+        self, workspace_root: str, qdrant_host: str = "localhost", qdrant_port: int = 6333
+    ):
         self.workspace_root = os.path.abspath(workspace_root)
         self.embedder = LocalEmbedder()
-        self.store = QdrantStore()
+        self.store = QdrantStore(host=qdrant_host, port=qdrant_port)
         self.chunker = ASTChunker()
         self.graph = CodeDependencyGraph()
         
@@ -61,17 +61,61 @@ class WorkspaceIndexer:
                     valid_files.append(file_path)
         return valid_files
 
-    def index_workspace(self, batch_size: int = 50, reset: bool = False) -> Dict[str, Any]:
+    def index_workspace(
+        self,
+        repository_id: str = "local-workspace",
+        repository_url: str = "",
+        branch: str = "",
+        commit_sha: str = "",
+        batch_size: int = 50,
+        reset: bool = False,
+    ) -> Dict[str, Any]:
         """
         Executes two-pass indexing:
         Pass 1: Builds the global CodeDependencyGraph for all files.
         Pass 2: Parses AST blocks / character chunks, embeds in batches, and bulk upserts to Qdrant.
         """
-        if reset:
-            print("[+] Resetting Qdrant collection for fresh codebase onboarding...")
-            self.store.reset_collection(vector_size=384)
-
         files = self.crawl_workspace()
+        return self._index_files(
+            files, repository_id, repository_url, branch, commit_sha, batch_size, reset
+        )
+
+    def index_changed_files(
+        self,
+        changed_files: Iterable[str],
+        repository_id: str,
+        repository_url: str,
+        branch: str,
+        commit_sha: str,
+        deleted_files: Iterable[str] = (),
+        batch_size: int = 50,
+    ) -> Dict[str, Any]:
+        files = []
+        for relative_path in changed_files:
+            path = (Path(self.workspace_root) / relative_path).resolve()
+            if Path(self.workspace_root) not in path.parents or not path.is_file():
+                continue
+            files.append(str(path))
+        for relative_path in deleted_files:
+            path = (Path(self.workspace_root) / relative_path).resolve()
+            if Path(self.workspace_root) not in path.parents:
+                continue
+            safe_path = os.path.relpath(path, self.workspace_root).replace("\\", "/")
+            self.store.delete_file_chunks(repository_id, safe_path)
+        return self._index_files(
+            files, repository_id, repository_url, branch, commit_sha, batch_size, True
+        )
+
+    def _index_files(
+        self,
+        files: List[str],
+        repository_id: str,
+        repository_url: str,
+        branch: str,
+        commit_sha: str,
+        batch_size: int,
+        replace_existing: bool,
+    ) -> Dict[str, Any]:
         print(f"[+] Discovered {len(files)} valid source files in: {self.workspace_root}")
         
         # Pass 1: Build global dependency graph
@@ -85,6 +129,9 @@ class WorkspaceIndexer:
         all_chunks = []
         
         for file_path in files:
+            relative_path = os.path.relpath(file_path, self.workspace_root).replace("\\", "/")
+            if replace_existing:
+                self.store.delete_file_chunks(repository_id, relative_path)
             try:
                 with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                     code_content = f.read()
@@ -104,11 +151,22 @@ class WorkspaceIndexer:
                 
             if blocks:
                 for b in blocks:
-                    b["file"] = file_path
+                    b["file"] = relative_path
                 file_chunks = self.chunker.chunk_blocks(blocks)
             else:
                 raw_chunks = chunk_file(file_path)
-                file_chunks = [{"content": c["text"], "file": file_path} for c in raw_chunks]
+                file_chunks = [{"content": c["text"], "file": relative_path} for c in raw_chunks]
+
+            for chunk in file_chunks:
+                chunk.update(
+                    {
+                        "repository_id": repository_id,
+                        "repository_url": repository_url,
+                        "branch": branch,
+                        "commit_sha": commit_sha,
+                        "file_path": relative_path,
+                    }
+                )
                 
             all_chunks.extend(file_chunks)
             

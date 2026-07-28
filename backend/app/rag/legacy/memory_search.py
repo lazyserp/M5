@@ -17,7 +17,7 @@ def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
 
 class MemoryVectorStore:
     """
-    Phase 1 Naive In-Memory NumPy Vector Store.
+    In-Memory Vector Store.
     """
     def __init__(self):
         self.registry: List[Dict[str, Any]] = [] # Holds text chunks

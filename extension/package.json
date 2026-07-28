@@ -48,6 +48,21 @@
           "type": "string",
           "default": "http://localhost:18000",
           "description": "URL of the central Project M5 backend server / K8s cluster (e.g. https://m5-ai.internal.bank.com)"
+        },
+        "m5.repositoryId": {
+          "type": "string",
+          "default": "",
+          "description": "Approved M5 repository identifier for the active workspace."
+        },
+        "m5.commitSha": {
+          "type": "string",
+          "default": "",
+          "description": "Commit SHA indexed by M5 for the active workspace."
+        },
+        "m5.accessToken": {
+          "type": "string",
+          "default": "",
+          "description": "Temporary M5 access token from local login. Do not commit this value in workspace settings."
         }
       }
     }

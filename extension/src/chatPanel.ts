@@ -24,46 +24,41 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.onDidReceiveMessage(async (data: any) => {
             switch (data.type) {
                 case 'askQuery': {
-                    // Capture active document path in VS Code
-                    const activeEditor = vscode.window.activeTextEditor;
-                    const activeFilePath = activeEditor ? activeEditor.document.fileName : '';
-                    
-                    // Send query to FastAPI backend
-                    await this._handleQuery(data.value, activeFilePath);
+                    await this._handleQuery(data.value);
                     break;
                 }
             }
         });
     }
 
-    private async _handleQuery(query: string, filePath: string) {
+    private async _handleQuery(query: string) {
         try {
             const config = vscode.workspace.getConfiguration('m5');
             const serverUrl = config.get<string>('serverUrl') || 'http://localhost:18000';
+            const repositoryId = config.get<string>('repositoryId') || '';
+            const commitSha = config.get<string>('commitSha') || '';
+            const accessToken = config.get<string>('accessToken') || '';
+            if (!repositoryId || !commitSha || !accessToken) {
+                throw new Error('Set m5.repositoryId, m5.commitSha, and m5.accessToken before asking a question.');
+            }
 
-            const response = await fetch(`${serverUrl}/api/v1/chat/stream`, {
+            const response = await fetch(`${serverUrl}/api/v1/chat`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: query, file_path: filePath })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify({
+                    query: query,
+                    repository_id: repositoryId,
+                    commit_sha: commitSha
+                })
             });
 
-            if (!response.ok || !response.body) {
+            if (!response.ok) {
                 throw new Error(`Server returned status: ${response.status}`);
             }
-
-            this._view?.webview.postMessage({ type: 'startStream' });
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                if (chunk) {
-                    this._view?.webview.postMessage({ type: 'appendToken', value: chunk });
-                }
-            }
+            this._view?.webview.postMessage({ type: 'addAnswer', value: await response.json() });
         } catch (err: any) {
             this._view?.webview.postMessage({ type: 'addError', value: `Error connecting to backend: ${err.message}` });
         }
@@ -138,7 +133,15 @@ export class ChatViewProvider implements vscode.WebviewViewProvider {
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
             } else if (message.type === 'addAnswer') {
-                appendMessage(message.value, 'assistant');
+                const answer = message.value;
+                let text = answer.answer;
+                if (answer.citations && answer.citations.length) {
+                    text += '\n\nSources:';
+                    for (const citation of answer.citations) {
+                        text += '\n• ' + citation.repository_id + ' | ' + citation.commit_sha.slice(0, 8) + ' | ' + citation.file_path + ' | lines ' + citation.start_line + '-' + citation.end_line + ' | score ' + citation.retrieval_score;
+                    }
+                }
+                appendMessage(text, 'assistant');
             } else if (message.type === 'addError') {
                 appendMessage(message.value, 'error');
             }
