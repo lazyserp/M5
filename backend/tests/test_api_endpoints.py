@@ -9,19 +9,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app.api.endpoints import chat
 from app.core.config import Settings
 from app.main import create_app
-from app.security.auth import hash_password
+def _settings() -> Settings:
+    return Settings.from_environment({})
 
 
-def _settings(tmp_path) -> Settings:
-    return Settings.from_environment(
-        {"M5_AUTH_SECRET": "test-secret", "M5_DATABASE_PATH": str(tmp_path / "m5-test.db")}
-    )
-
-
-def _authorized_client(tmp_path, monkeypatch) -> tuple[TestClient, dict[str, str], Mock]:
-    app = create_app(_settings(tmp_path))
-    user = app.state.security_store.create_user("developer", hash_password("correct-password"), "developer")
-    app.state.security_store.grant_repository_access(user["id"], "demo-service")
+def _client(monkeypatch) -> tuple[TestClient, Mock]:
+    app = create_app(_settings())
     model = Mock()
     model.chat.return_value = "The answer is grounded in supplied context."
     embedder = Mock()
@@ -38,13 +31,11 @@ def _authorized_client(tmp_path, monkeypatch) -> tuple[TestClient, dict[str, str
         }
     ]
     monkeypatch.setattr(chat, "_services", lambda _request: (model, embedder, store))
-    from app.security.auth import create_access_token
-    token = create_access_token(user["id"], "test-secret", 60)
-    return TestClient(app), {"Authorization": f"Bearer {token}"}, store
+    return TestClient(app), store
 
 
-def test_health_check(tmp_path) -> None:
-    client = TestClient(create_app(_settings(tmp_path)))
+def test_health_check() -> None:
+    client = TestClient(create_app(_settings()))
 
     response = client.get("/health")
 
@@ -52,8 +43,8 @@ def test_health_check(tmp_path) -> None:
     assert response.json() == {"status": "healthy", "service": "m5-api"}
 
 
-def test_chat_endpoint_uses_mocked_service_boundaries(tmp_path, monkeypatch) -> None:
-    client, headers, _ = _authorized_client(tmp_path, monkeypatch)
+def test_chat_endpoint_uses_mocked_service_boundaries(monkeypatch) -> None:
+    client, _ = _client(monkeypatch)
 
     response = client.post(
         "/api/v1/chat",
@@ -61,7 +52,7 @@ def test_chat_endpoint_uses_mocked_service_boundaries(tmp_path, monkeypatch) -> 
             "query": "What does example do?",
             "repository_id": "demo-service",
             "commit_sha": "a" * 40,
-        }, headers=headers,
+        },
     )
 
     assert response.status_code == 200
@@ -84,8 +75,8 @@ def test_chat_endpoint_uses_mocked_service_boundaries(tmp_path, monkeypatch) -> 
     assert response.json()["grounded"] is True
 
 
-def test_chat_refuses_when_no_evidence_exists(tmp_path, monkeypatch) -> None:
-    client, headers, store = _authorized_client(tmp_path, monkeypatch)
+def test_chat_refuses_when_no_evidence_exists(monkeypatch) -> None:
+    client, store = _client(monkeypatch)
     store.search.return_value = []
 
     response = client.post(
@@ -94,7 +85,7 @@ def test_chat_refuses_when_no_evidence_exists(tmp_path, monkeypatch) -> None:
             "query": "What does example do?",
             "repository_id": "demo-service",
             "commit_sha": "a" * 40,
-        }, headers=headers,
+        },
     )
 
     assert response.json()["grounded"] is False

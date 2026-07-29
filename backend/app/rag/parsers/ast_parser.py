@@ -3,13 +3,12 @@ from typing import List, Dict, Any
 from tree_sitter import Language, Parser
 
 # Dictionary mapping language names to their tree-sitter block node types.
-# As we scale to support more languages in the future, we simply add their grammar block node types here.
 LANGUAGE_BLOCK_TYPES = {
-    "python": ["function_definition", "class_definition"],
-    "java": ["method_declaration", "class_declaration", "interface_declaration"],
-    "cpp": ["function_definition", "class_specifier", "struct_specifier"],
+    "python": ["function_definition", "class_definition", "async_function_definition"],
+    "java": ["method_declaration", "class_declaration", "interface_declaration", "record_declaration", "enum_declaration", "constructor_declaration"],
+    "cpp": ["function_definition", "class_specifier", "struct_specifier", "namespace_definition"],
     "javascript": ["function_declaration", "class_declaration", "method_definition", "arrow_function"],
-    "typescript": ["function_declaration", "class_declaration", "method_definition", "arrow_function"],
+    "typescript": ["function_declaration", "class_declaration", "method_definition", "arrow_function", "interface_declaration", "type_alias_declaration", "enum_declaration"],
 }
 
 class ASTParser:
@@ -19,16 +18,10 @@ class ASTParser:
     """
     def __init__(self, language_name: str = "python"):
         self.language_name = language_name.lower().strip()
-        # Dynamically load the language grammar package
         lang_obj = self._load_language(self.language_name)
-        # Bind the parser to this language
         self.parser = Parser(lang_obj)
 
     def _load_language(self, lang_name: str) -> Language:
-        """
-        Dynamically imports the matching tree-sitter-<language> library at runtime.
-        E.g. if lang_name is 'python', it dynamically imports 'tree_sitter_python'.
-        """
         name_map = {
             "py": "python",
             "js": "javascript",
@@ -64,7 +57,7 @@ class ASTParser:
                 if name_node:
                     name = bytes(code, "utf8")[name_node.start_byte : name_node.end_byte].decode("utf8")
                 else:
-                    name = "unknown"
+                    name = node.type
 
                 start_line = node.start_point[0] + 1
                 end_line = node.end_point[0] + 1

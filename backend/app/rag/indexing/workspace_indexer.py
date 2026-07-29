@@ -25,8 +25,9 @@ DEFAULT_IGNORE_DIRS = {
 
 # Valid source file extensions
 VALID_EXTENSIONS = {
-    ".py", ".java", ".js", ".ts", ".cpp", ".h", ".c", ".cs",
-    ".go", ".rs", ".md", ".sql", ".json", ".yaml", ".yml", ".xml", ".properties"
+    ".py", ".java", ".js", ".ts", ".cpp", ".h", ".c", ".cs", ".go", ".rs", ".kt",
+    ".md", ".sql", ".json", ".yaml", ".yml", ".xml", ".properties", ".gradle",
+    ".txt", ".sh", ".bat", ".cmd", ".dockerfile", ".toml", ".ini", ".conf", ".env"
 }
 
 class WorkspaceIndexer:
@@ -155,7 +156,16 @@ class WorkspaceIndexer:
                 file_chunks = self.chunker.chunk_blocks(blocks)
             else:
                 raw_chunks = chunk_file(file_path)
-                file_chunks = [{"content": c["text"], "file": relative_path} for c in raw_chunks]
+                file_chunks = [
+                    {
+                        "content": c["text"],
+                        "file": relative_path,
+                        "file_path": relative_path,
+                        "start_line": c.get("start_line", 1),
+                        "end_line": c.get("end_line", 1),
+                    }
+                    for c in raw_chunks
+                ]
 
             for chunk in file_chunks:
                 chunk.update(

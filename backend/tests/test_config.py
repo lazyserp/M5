@@ -30,3 +30,9 @@ def test_settings_read_m5_environment_values() -> None:
 def test_settings_reject_wildcard_cors_origin() -> None:
     with pytest.raises(ConfigurationError, match="must not include"):
         Settings.from_environment({"M5_ALLOWED_ORIGINS": "*"})
+
+
+def test_settings_use_the_approved_nvidia_model_by_default() -> None:
+    settings = Settings.from_environment({})
+
+    assert settings.nvidia_model == "nvidia/nemotron-3-ultra-550b-a55b"

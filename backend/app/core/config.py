@@ -24,12 +24,8 @@ class Settings:
     qdrant_host: str
     qdrant_port: int
     workspace_root: Path
-    webhook_secret: str | None
-    auth_secret: str | None
-    auth_token_minutes: int
-    database_path: Path
-    bootstrap_admin_username: str | None
-    bootstrap_admin_password: str | None
+    nvidia_api_key: str | None
+    nvidia_model: str
 
     @classmethod
     def from_environment(
@@ -50,12 +46,11 @@ class Settings:
             raise ConfigurationError("M5_OLLAMA_BASE_URL must be an absolute HTTP(S) URL.")
 
         timeout = _positive_float(
-            environment.get("M5_REQUEST_TIMEOUT_SECONDS", "30"),
+            environment.get("M5_REQUEST_TIMEOUT_SECONDS", "300"),
             "M5_REQUEST_TIMEOUT_SECONDS",
         )
         qdrant_port = _port_number(environment.get("M5_QDRANT_PORT", "6333"))
         workspace_root = Path(environment.get("M5_WORKSPACE_ROOT", ".")).resolve()
-        database_path = Path(environment.get("M5_DATABASE_PATH", "m5.db")).resolve()
         return cls(
             allowed_origins=allowed_origins,
             ollama_base_url=ollama_base_url.rstrip("/"),
@@ -64,12 +59,10 @@ class Settings:
             qdrant_host=environment.get("M5_QDRANT_HOST", "localhost"),
             qdrant_port=qdrant_port,
             workspace_root=workspace_root,
-            webhook_secret=environment.get("M5_WEBHOOK_SECRET") or None,
-            auth_secret=environment.get("M5_AUTH_SECRET") or None,
-            auth_token_minutes=int(environment.get("M5_AUTH_TOKEN_MINUTES", "60")),
-            database_path=database_path,
-            bootstrap_admin_username=environment.get("M5_BOOTSTRAP_ADMIN_USERNAME") or None,
-            bootstrap_admin_password=environment.get("M5_BOOTSTRAP_ADMIN_PASSWORD") or None,
+            nvidia_api_key=environment.get("NVIDIA_API_KEY") or None,
+            nvidia_model=environment.get(
+                "NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b"
+            ),
         )
 
 

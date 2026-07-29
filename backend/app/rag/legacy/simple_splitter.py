@@ -1,31 +1,42 @@
 from typing import List, Dict, Any
 
-def chunk_file(file_path: str, chunk_size: int = 500, overlap: int = 50) -> List[Dict[str, Any]]:
+def chunk_file(file_path: str, chunk_lines: int = 40, line_overlap: int = 5) -> List[Dict[str, Any]]:
     """
-    Phase 1 Naive Character Splitter.
-    Splits text files into fixed character chunks with sliding window overlap.
+    Line-aware chunker for non-AST files (SQL, Markdown, YAML, JSON, TXT, etc.)
+    Preserves exact 1-indexed start_line and end_line bounds for every chunk.
     """
-    with open(file_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            lines = f.readlines()
+    except Exception:
+        return []
 
-        chunks = []
-        start = 0
-        chunk_id = 0
+    if not lines:
+        return []
 
-        while start < len(content):
-            end = min(start + chunk_size, len(content))
-            chunk_text = content[start:end]
+    chunks = []
+    chunk_id = 0
+    i = 0
+    total_lines = len(lines)
 
-            chunk_dict = {
-                "id": chunk_id,
-                "text": chunk_text,
-                "start_char": start,
-                "end_char": end,
-                "file": file_path
-            }
+    while i < total_lines:
+        start_line = i + 1
+        end_line = min(i + chunk_lines, total_lines)
+        chunk_lines_text = lines[i:end_line]
+        chunk_text = "".join(chunk_lines_text)
 
-            chunks.append(chunk_dict)
-            chunk_id += 1
-            start += (chunk_size - overlap)
+        chunks.append({
+            "id": chunk_id,
+            "text": chunk_text,
+            "content": chunk_text,
+            "start_line": start_line,
+            "end_line": end_line,
+            "file": file_path
+        })
+
+        chunk_id += 1
+        i += (chunk_lines - line_overlap)
+        if i >= total_lines:
+            break
 
     return chunks

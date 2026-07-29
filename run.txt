@@ -1,11 +1,46 @@
-onboard any codebase:
-python "d:\Wissen Practice\M5\backend\app\rag\indexing\workspace_indexer.py" "." --reset
+1. Configure Local Environment Variables
+Create or verify your .env file at the workspace root (
 
-1. Deliver Package	Hand client docker-compose.m5.yml + M5-0.0.1.vsix.	✅ Ready
-2. Client Server Launch	Client runs docker compose -f docker-compose.m5.yml up -d.	✅ Ready
-3. IDE Installation	Developers install M5-0.0.1.vsix in 2 clicks.	✅ Ready
-4. Live Streaming Chat	Developers query their codebase with live real-time token streaming.	✅ Verified
+.env
+):
 
+dotenv
+TARGET_CODEBASE=d:\Wissen Practice\M5
+M5_OLLAMA_MODEL=qwen2.5-coder:1.5b
+2. Launch Container Stack via Docker Compose
+From the project root:
 
-to reset to a new codease:
-docker exec M5-backend python -m app.rag.indexing.workspace_indexer /app/workspace --reset
+powershell
+cd "d:\Wissen Practice\M5"
+docker compose --env-file .env -f docker/docker-compose.m5.yml up -d
+(This starts the FastAPI backend at http://127.0.0.1:18000, Qdrant vector database on port 6333, and Ollama local model server).
+
+3. Index the Codebase
+Submit repository ID, URL, branch, and commit SHA to `POST /api/v1/index`. The backend indexes only the deployment owner's mounted `TARGET_CODEBASE`.
+4. Run Full Integration Test Suite
+With Docker running, execute all unit and live integration tests (Qdrant & Graph-RAG pipeline):
+
+powershell
+cd "d:\Wissen Practice\M5\backend"
+python -m pytest -v
+5. Test Live Q&A via REST API (PowerShell)
+Submit a query with exact repository and commit citations:
+
+powershell
+$commitSha = (git rev-parse HEAD).Trim()
+$queryBody = @{
+    query = "How does the AST parser chunk Python functions?"
+    repository_id = "M5-backend"
+    commit_sha = $commitSha
+} | ConvertTo-Json
+$response = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:18000/api/v1/chat" -ContentType "application/json" -Body $queryBody
+$response | ConvertTo-Json -Depth 5
+6. Test the VS Code Sidebar Extension (M5-0.0.1.vsix)
+Open VS Code extensions panel (Ctrl+Shift+X).
+Click the ... (Views and More Actions) menu at top-right -> Install from VSIX....
+Select d:\Wissen Practice\M5\extension\M5-0.0.1.vsix.
+Configure VS Code Settings (Ctrl+, -> search m5):
+m5.repositoryId: M5-backend
+m5.commitSha: (your current commit SHA)
+Click the M5 icon on the VS Code left activity sidebar to open the chat interface and ask questions about your active codebase snapshot!
+1:56 PM
