@@ -28,7 +28,7 @@ flowchart TD
 
     subgraph Models ["LLM Engine (Customer Controlled)"]
         Ollama["Ollama Local Model (Default)"]
-        NVIDIA["NVIDIA NIM Service (Optional)"]
+        LLM["LLM Service (Optional)"]
     end
 
     %% Ingestion Flow
@@ -43,10 +43,10 @@ flowchart TD
     API --> LLMSelector
     
     LLMSelector -->|"No API Key"| Ollama
-    LLMSelector -->|"NVIDIA_API_KEY Set"| NVIDIA
+    LLMSelector -->|"LLM_API_KEY Set"| OpenAI, Claude ,Kimi
 
     Ollama -->|"Contextual Answer"| API
-    NVIDIA -->|"Contextual Answer"| API
+    LLM -->|"Contextual Answer"| API
     
     API -->|"Grounded Answer + Exact Citations"| Webview
 ```
@@ -59,7 +59,7 @@ flowchart TD
 -  **Exact Evidence & Citations**: Every substantive answer includes repository file paths and exact line ranges.
 -  **Graph-RAG & AST Structural Context**: Ingests codebases using Tree-sitter/AST parsing and expands graph dependencies for neighboring code context.
 -  **Rich IDE Experience**: VS Code Extension webview with rich GitHub-Flavored Markdown (headers, bolding, italics, bullet lists, code blocks with copy buttons, and citation pills).
--  **Automatic Model Fallback**: Uses local Ollama (`qwen2.5-coder`) by default; seamlessly switches to NVIDIA NIM when an API key is configured.
+-  **Automatic Model Fallback**: Uses local Ollama (`qwen2.5-coder`) by default; seamlessly switches to LLM when an API key is configured.
 
 ---
 
@@ -96,4 +96,4 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 18000
 
 ### 3. Install Extension and make request calls
 
-Install `M5-0.0.1.vsix` via VS Code and run **Developer: Reload Window**.
+Install `M5-0.0.1.vsix` via VS Code and run 
