@@ -1,5 +1,7 @@
+from typing import Any, Dict, List
+
 import numpy as np
-from typing import List, Dict, Any
+
 
 def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
     """

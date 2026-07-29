@@ -1,7 +1,7 @@
 name: M5
 
 services:
-  # 1. Qdrant Persistent Vector Database (Custom Port 16333)
+  # Qdrant Persistent Vector Database (Custom Port 16333)
   qdrant:
     image: qdrant/qdrant:latest
     container_name: M5-qdrant
@@ -12,7 +12,7 @@ services:
     volumes:
       - qdrant_storage:/qdrant/storage
 
-  # 2. Ollama Local LLM Model Engine (Custom Port 11435)
+  # Ollama Local LLM Model Engine (Custom Port 11435)
   ollama:
     image: ollama/ollama:latest
     container_name: M5-ollama
@@ -22,7 +22,7 @@ services:
     volumes:
       - ollama_storage:/root/.ollama
 
-  # 3. Model Auto-Downloader (Pulls Model into Ollama on First Launch)
+  #  Model Auto-Downloader (Pulls Model into Ollama on First Launch)
   ollama-pull-model:
     image: ollama/ollama:latest
     container_name: M5-ollama-pull
@@ -33,7 +33,7 @@ services:
     depends_on:
       - ollama
 
-  # 4. Project M5 FastAPI Backend API (Custom Port 18000)
+  #  Project M5 FastAPI Backend API (Custom Port 18000)
   m5-backend:
     build: ../backend
     image: ${M5_IMAGE:-lazyserp/m5-backend:v1.0}

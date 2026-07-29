@@ -1,7 +1,7 @@
 import os
 import sys
 
-# Append parent directory tree so Python can resolve 'app'
+# parent directory tree so Python can resolve 'app'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 
 from app.core.llm_client import LocalLLMClient

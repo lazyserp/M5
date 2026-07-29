@@ -70,8 +70,6 @@ class LangChainNvidiaClient:
         from langchain_core.output_parsers import StrOutputParser
         from langchain_core.prompts import PromptTemplate
 
-        # Keep this shape aligned with the supported ChatNVIDIA API: api_key,
-        # not the legacy nvidia_api_key keyword.
         self.llm = ChatNVIDIA(
             model=model_name,
             api_key=api_key,
