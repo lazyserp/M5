@@ -41,6 +41,22 @@
         }
       ]
     },
+    "commands": [
+      {
+        "command": "m5.openFloatingChat",
+        "title": "M5: Open Floating Chat Window",
+        "icon": "$(layout-sidebar-right)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "m5.openFloatingChat",
+          "when": "view == m5-ai-chat-view",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "M5 ",
       "properties": {
@@ -48,21 +64,6 @@
           "type": "string",
           "default": "http://localhost:18000",
           "description": "URL of the central Project M5 backend server / K8s cluster (e.g. https://m5-ai.internal.bank.com)"
-        },
-        "m5.repositoryId": {
-          "type": "string",
-          "default": "",
-          "description": "Approved M5 repository identifier for the active workspace."
-        },
-        "m5.commitSha": {
-          "type": "string",
-          "default": "",
-          "description": "Commit SHA indexed by M5 for the active workspace."
-        },
-        "m5.accessToken": {
-          "type": "string",
-          "default": "",
-          "description": "Temporary M5 access token from local login. Do not commit this value in workspace settings."
         }
       }
     }
@@ -73,8 +74,12 @@
     "watch": "tsc -watch -p ./"
   },
   "devDependencies": {
-    "@types/vscode": "^1.80.0",
+    "@types/marked": "^5.0.2",
     "@types/node": "18.x",
+    "@types/vscode": "^1.80.0",
     "typescript": "^5.1.6"
+  },
+  "dependencies": {
+    "marked": "^18.0.7"
   }
 }
