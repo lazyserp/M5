@@ -35,26 +35,23 @@ services:
 
   # 4. Project M5 FastAPI Backend API (Custom Port 18000)
   m5-backend:
+    build: ../backend
     image: ${M5_IMAGE:-lazyserp/m5-backend:v1.0}
     container_name: M5-backend
     restart: always
     ports:
       - "18000:8000"
+    env_file:
+      - .env
     environment:
       - M5_QDRANT_HOST=qdrant
       - M5_QDRANT_PORT=6333
       - M5_OLLAMA_BASE_URL=http://ollama:11434
       - M5_OLLAMA_MODEL=${M5_OLLAMA_MODEL:-qwen2.5-coder:1.5b}
       - M5_WORKSPACE_ROOT=/app/workspace
-      - M5_WEBHOOK_SECRET=${M5_WEBHOOK_SECRET:-}
-      - M5_AUTH_SECRET=${M5_AUTH_SECRET:-}
-      - M5_AUTH_TOKEN_MINUTES=${M5_AUTH_TOKEN_MINUTES:-60}
-      - M5_DATABASE_PATH=/var/lib/m5/m5.db
-      - M5_BOOTSTRAP_ADMIN_USERNAME=${M5_BOOTSTRAP_ADMIN_USERNAME:-}
-      - M5_BOOTSTRAP_ADMIN_PASSWORD=${M5_BOOTSTRAP_ADMIN_PASSWORD:-}
     volumes:
       - "${TARGET_CODEBASE:-.}:/app/workspace"
-      - m5_data:/var/lib/m5
+      - "../backend/app:/app/app"
     depends_on:
       - qdrant
       - ollama
@@ -62,4 +59,3 @@ services:
 volumes:
   qdrant_storage:
   ollama_storage:
-  m5_data:
