@@ -6,12 +6,7 @@ class LocalLLMClient:
     """
     A REST client class to communicate with locally running Ollama instance.
     """
-    def __init__(
-        self,
-        base_url: str = "http://localhost:11434",
-        model_name: str = "qwen2.5-coder:1.5b",
-        timeout_seconds: float = 30.0,
-    ) -> None:
+    def __init__(self,base_url: str = "http://localhost:11434",model_name: str = "qwen2.5-coder:1.5b",timeout_seconds: float = 30.0,) -> None:
         self.chat_url = f"{base_url.rstrip('/')}/api/chat"
         self.model_name = model_name
         self.timeout_seconds = timeout_seconds
@@ -56,23 +51,18 @@ class LocalLLMClient:
         except (ValueError, requests.RequestException) as error:
             raise RuntimeError("The local model service did not return a usable response.") from error
 
+class LangChainGroqClient:
+    """Groq client built with a LangChain prompt/model/parser chain."""
 
-class LangChainNvidiaClient:
-    """NVIDIA NIM client built with a LangChain prompt/model/parser chain."""
-
-    def __init__(
-        self,
-        api_key: str,
-        model_name: str = "nvidia/nemotron-3-ultra-550b-a55b",
-        timeout_seconds: float = 60.0,
+    def __init__(self,api_key: str,model_name: str = "openai/gpt-oss-120b",timeout_seconds: float = 60.0,
     ) -> None:
-        from langchain_nvidia_ai_endpoints import ChatNVIDIA
         from langchain_core.output_parsers import StrOutputParser
         from langchain_core.prompts import PromptTemplate
+        from langchain_groq import ChatGroq
 
-        self.llm = ChatNVIDIA(
+        self.llm = ChatGroq(
             model=model_name,
-            api_key=api_key,
+            groq_api_key=api_key,
         )
         self.prompt = PromptTemplate.from_template(
             "{system_prompt}\n\nUser question: {user_prompt}"
@@ -87,7 +77,7 @@ class LangChainNvidiaClient:
                 )
             )
         except Exception as error:
-            raise RuntimeError(f"NVIDIA model service error: {error}") from error
+            raise RuntimeError(f"Groq model service error: {error}") from error
 
     def chat_stream(self, system_prompt: str, user_prompt: str) -> Iterator[str]:
         try:
@@ -95,4 +85,4 @@ class LangChainNvidiaClient:
                 {"system_prompt": system_prompt, "user_prompt": user_prompt}
             )
         except Exception as error:
-            raise RuntimeError(f"NVIDIA model service error: {error}") from error
+            raise RuntimeError(f"Groq model service error: {error}") from error

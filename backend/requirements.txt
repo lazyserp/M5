@@ -16,4 +16,4 @@ psycopg2-binary>=2.9.6
 python-multipart>=0.0.6
 langchain-core>=0.2.0
 langchain-openai>=0.1.0
-langchain-nvidia-ai-endpoints>=0.1.0
+langchain-groq>=0.1.0

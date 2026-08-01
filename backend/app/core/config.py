@@ -24,13 +24,11 @@ class Settings:
     qdrant_host: str
     qdrant_port: int
     workspace_root: Path
-    nvidia_api_key: str | None
-    nvidia_model: str
+    groq_api_key: str | None
+    groq_model: str
 
     @classmethod
-    def from_environment(
-        cls, environment: Mapping[str, str] | None = None
-    ) -> "Settings":
+    def from_environment(cls, environment: Mapping[str, str] | None = None) -> Settings:
         environment = environment or os.environ
         allowed_origins = tuple(
             origin.strip()
@@ -60,10 +58,9 @@ class Settings:
             qdrant_port=qdrant_port,
             workspace_root=workspace_root,
             nvidia_api_key=environment.get("NVIDIA_API_KEY") or None,
-            nvidia_model=environment.get(
-                "NVIDIA_MODEL", "nvidia/nemotron-3-ultra-550b-a55b"
-            ),
-        )
+            groq_api_key=environment.get("GROQ_API_KEY") or None,
+            groq_model=environment.get("GROQ_MODEL", "openai/gpt-oss-120b"),
+                    )
 
 
 def _positive_float(value: str, name: str) -> float:
