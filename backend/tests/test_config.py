@@ -32,7 +32,7 @@ def test_settings_reject_wildcard_cors_origin() -> None:
         Settings.from_environment({"M5_ALLOWED_ORIGINS": "*"})
 
 
-def test_settings_use_the_approved_nvidia_model_by_default() -> None:
+def test_settings_use_the_approved_groq_model_by_default() -> None:
     settings = Settings.from_environment({})
 
-    assert settings.nvidia_model == "nvidia/nemotron-3-ultra-550b-a55b"
+    assert settings.groq_model == "llama-3.3-70b-versatile"

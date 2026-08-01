@@ -57,10 +57,9 @@ class Settings:
             qdrant_host=environment.get("M5_QDRANT_HOST", "localhost"),
             qdrant_port=qdrant_port,
             workspace_root=workspace_root,
-            nvidia_api_key=environment.get("NVIDIA_API_KEY") or None,
-            groq_api_key=environment.get("GROQ_API_KEY") or None,
-            groq_model=environment.get("GROQ_MODEL", "openai/gpt-oss-120b"),
-                    )
+            groq_api_key=environment.get("GROQ_API_KEY") or environment.get("groq_api_key") or None,
+            groq_model=environment.get("GROQ_MODEL") or environment.get("groq_model") or "llama-3.3-70b-versatile",
+        )
 
 
 def _positive_float(value: str, name: str) -> float:

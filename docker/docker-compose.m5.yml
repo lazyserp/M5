@@ -18,7 +18,7 @@ services:
     container_name: M5-ollama
     restart: always
     ports:
-      - "11435:11434"
+      - "30000:11434"
     volumes:
       - ollama_storage:/root/.ollama
 
@@ -49,6 +49,8 @@ services:
       - M5_OLLAMA_BASE_URL=http://ollama:11434
       - M5_OLLAMA_MODEL=${M5_OLLAMA_MODEL:-qwen2.5-coder:1.5b}
       - M5_WORKSPACE_ROOT=/app/workspace
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - GROQ_MODEL=${GROQ_MODEL:-llama-3.3-70b-versatile}
     volumes:
       - "${TARGET_CODEBASE:-.}:/app/workspace"
       - "../backend/app:/app/app"

@@ -54,7 +54,11 @@ class LocalLLMClient:
 class LangChainGroqClient:
     """Groq client built with a LangChain prompt/model/parser chain."""
 
-    def __init__(self,api_key: str,model_name: str = "openai/gpt-oss-120b",timeout_seconds: float = 60.0,
+    def __init__(
+        self,
+        api_key: str,
+        model_name: str = "llama-3.3-70b-versatile",
+        timeout_seconds: float = 60.0,
     ) -> None:
         from langchain_core.output_parsers import StrOutputParser
         from langchain_core.prompts import PromptTemplate
