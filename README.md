@@ -6,29 +6,28 @@ M5 helps engineering organizations analyze, onboard, and investigate legacy or s
 ---
 
 ##  Architecture & System Flow
-
 ```mermaid
 flowchart TD
-    subgraph Client ["VS Code Extension"]
+    subgraph Client["VS Code Extension"]
         Developer["Developer Query"]
         Webview["Rich Markdown Chat Panel"]
     end
 
-    subgraph Backend ["FastAPI Core Server"]
+    subgraph Backend["FastAPI Core Server"]
         API["FastAPI Orchestrator"]
         Parser["AST Parser & Ingestion Service"]
         Embedder["Local Embedder"]
         LLMSelector{"LLM Selector"}
     end
 
-    subgraph Storage ["On-Premise Storage & Vector DB"]
+    subgraph Storage["On-Premise Storage & Vector DB"]
         Qdrant[("Qdrant Vector Database")]
         GitRepo[("Workspace Repositories")]
     end
 
-    subgraph Models ["LLM Engine (Customer Controlled)"]
+    subgraph Models["LLM Engine (Customer Controlled)"]
         Ollama["Ollama Local Model (Default)"]
-        LLM["LLM Service (Optional)"]
+        LLM["External LLM Service"]
     end
 
     %% Ingestion Flow
@@ -40,17 +39,16 @@ flowchart TD
     Developer -->|"Send Query"| API
     API -->|"Vector Search"| Qdrant
     Qdrant -->|"Retrieved Context & Dependency Chunks"| API
+
     API --> LLMSelector
-    
     LLMSelector -->|"No API Key"| Ollama
-    LLMSelector -->|"LLM_API_KEY Set"| OpenAI, Claude ,Kimi
+    LLMSelector -->|"LLM_API_KEY Set"| LLM
 
     Ollama -->|"Contextual Answer"| API
     LLM -->|"Contextual Answer"| API
-    
+
     API -->|"Grounded Answer + Exact Citations"| Webview
 ```
-
 ---
 
 ##  Key Features
